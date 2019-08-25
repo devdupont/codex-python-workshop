@@ -2,6 +2,7 @@
 https://docs.sqlalchemy.org/en/13/orm/tutorial.html
 """
 
+import csv
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, Column, String, Float, DateTime, Integer
@@ -31,14 +32,17 @@ class Crime(Base):
     def __repr__(self):
         return f"Crime occured at {self.timestamp}"
 
+def get_session():
+    Session = sessionmaker(bind=db)
+    return Session()
+
 def demo():
     """
     """
     # Create tables
     Base.metadata.create_all(db)
 
-    Session = sessionmaker(bind=db)
-    session = Session()
+    session = get_session()
 
     c = Crime(
         id=1,
@@ -56,7 +60,25 @@ def demo():
 def populate_from_csv(filename: str):
     """
     """
-    pass
+    # Create tables
+    Base.metadata.create_all(db)
+
+    session = get_session()
+
+    with open(filename) as fin:
+        crimedata = csv.reader(fin)
+        cols = next(crimedata)
+        cols[0] = 'id'
+        for crime in crimedata:
+            crime[0] = int(crime[0])
+            crime[-1] = float(crime[-1])
+            crime[-2] = float(crime[-2])
+            crime[2] = datetime.strptime(crime[2], "%Y-%m-%d %H:%M:%S")
+            crime = dict(zip(cols, crime))
+            c = Crime(**crime)
+            session.add(c)
+    session.commit()
+
 
 if __name__ == "__main__":
-    demo()
+    populate_from_csv("clean_opd.csv")
