@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Codex Workshop</h1>
+<p>Hello to 
+    {% if name %}
+        {{ name }}
+    {% else %}
+        you wonderful people
+    {% endif %}
+</p>
+{% endblock %}
